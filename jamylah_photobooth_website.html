@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jamylah's Housewarming Party Photobooth</title>
+<style>
+body{
+    font-family: Arial, sans-serif;
+    text-align:center;
+    background:#f4f4f4;
+    padding:30px;
+}
+button{
+    padding:15px 25px;
+    margin:10px;
+    font-size:18px;
+    border-radius:12px;
+}
+#camera{
+    width:90%;
+    max-width:500px;
+    border-radius:20px;
+}
+canvas{
+    display:none;
+}
+img.thumb{
+    width:120px;
+    margin:5px;
+    border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<h1>Jamylah's Housewarming Party</h1>
+<h2>📸 Photobooth</h2>
+
+<div id="startScreen">
+<button onclick="startBooth()">START</button>
+</div>
+
+<div id="booth" style="display:none;">
+<p>Select Layout</p>
+<button onclick="setLayout(3)">3-Photo Strip</button>
+<button onclick="setLayout(4)">4-Photo Strip</button>
+
+<h2 id="countdown"></h2>
+
+<video id="camera" autoplay playsinline></video>
+<br>
+<button onclick="capturePhoto()">Take Photo</button>
+
+<div id="gallery"></div>
+
+<div id="actions" style="display:none;">
+<button onclick="location.reload()">Retake</button>
+<button onclick="downloadPhotos()">Download Photos</button>
+</div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+let photos=[];
+let totalPhotos=4;
+
+async function startBooth(){
+    document.getElementById("startScreen").style.display="none";
+    document.getElementById("booth").style.display="block";
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:"user"}
+    });
+
+    document.getElementById("camera").srcObject = stream;
+}
+
+function setLayout(num){
+    totalPhotos=num;
+    alert(num + "-photo strip selected");
+}
+
+function capturePhoto(){
+    if(photos.length >= totalPhotos){
+        return;
+    }
+
+    const video=document.getElementById("camera");
+    const canvas=document.getElementById("canvas");
+    const ctx=canvas.getContext("2d");
+
+    canvas.width=video.videoWidth;
+    canvas.height=video.videoHeight;
+
+    ctx.drawImage(video,0,0);
+
+    let img=canvas.toDataURL("image/png");
+    photos.push(img);
+
+    let image=document.createElement("img");
+    image.src=img;
+    image.className="thumb";
+
+    document.getElementById("gallery").appendChild(image);
+
+    if(photos.length===totalPhotos){
+        document.getElementById("actions").style.display="block";
+    }
+}
+
+function downloadPhotos(){
+    photos.forEach((p,i)=>{
+        let a=document.createElement("a");
+        a.href=p;
+        a.download="photo_"+(i+1)+".png";
+        a.click();
+    });
+}
+</script>
+
+</body>
+</html>
